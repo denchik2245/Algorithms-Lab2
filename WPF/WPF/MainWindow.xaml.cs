@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Logic;
 
@@ -16,113 +17,181 @@ namespace FractalApp
         private readonly double _rodHeight = 200;
         private readonly double _diskHeight = 20;
         private double[] _rodPositions;
+        private int _currentMoveIndex = 0;
+        private List<string> _moves;
+        private bool _isAutoMode = false;
 
         public MainWindow()
         {
             InitializeComponent();
         }
+        
+        private void SetVisibility(UIElement element, Visibility visibility)
+        {
+            if (element != null)
+            {
+                element.Visibility = visibility;
+            }
+        }
 
-        // Обработчик переключения на "Отрисовку фракталов"
+        // Обработчики переключения режимов
         private void FractalRadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            // Убедимся, что элементы не null перед использованием
-            if (FractalControls != null)
-            {
-                FractalControls.Visibility = Visibility.Visible;
-            }
-            if (RecursionDepthPanel != null)
-            {
-                RecursionDepthPanel.Visibility = Visibility.Visible;
-            }
-            if (HanoiControls != null)
-            {
-                HanoiControls.Visibility = Visibility.Collapsed;
-            }
-            if (HanoiButtonsPanel != null)
-            {
-                HanoiButtonsPanel.Visibility = Visibility.Collapsed; // Скрываем кнопки "Шаг вперед" и "Шаг назад"
-            }
-            if (DisplayCanvas != null)
-            {
-                DisplayCanvas.Children.Clear();
-            }
+            SetVisibility(FractalControls, Visibility.Visible);
+            SetVisibility(RecursionDepthPanel, Visibility.Visible);
+            SetVisibility(HanoiControls, Visibility.Collapsed);
+            SetVisibility(HanoiButtonsPanel, Visibility.Collapsed);
+            SetVisibility(StartHanoiButton, Visibility.Collapsed);
+            SetVisibility(ButtonCalculation, Visibility.Visible);
+            SetVisibility(StopButton, Visibility.Collapsed);
+
+            DisplayCanvas?.Children.Clear();
         }
 
-        // Обработчик переключения на "Ханойские башни"
         private void HanoiRadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            if (FractalControls != null)
-            {
-                FractalControls.Visibility = Visibility.Collapsed;
-            }
-            if (RecursionDepthPanel != null)
-            {
-                RecursionDepthPanel.Visibility = Visibility.Collapsed;
-            }
+            SetVisibility(FractalControls, Visibility.Collapsed);
+            SetVisibility(RecursionDepthPanel, Visibility.Collapsed);
+            SetVisibility(HanoiControls, Visibility.Visible);
+            SetVisibility(HanoiButtonsPanel, Visibility.Visible);
+            SetVisibility(StartHanoiButton, Visibility.Visible);
+            SetVisibility(ButtonCalculation, Visibility.Collapsed);
+            SetVisibility(StopButton, Visibility.Visible);
 
-            // Показываем элементы для Ханойских башен
-            if (HanoiControls != null)
-            {
-                HanoiControls.Visibility = Visibility.Visible; // Поле для ввода количества дисков
-            }
-            if (HanoiButtonsPanel != null)
-            {
-                HanoiButtonsPanel.Visibility = Visibility.Visible; // Кнопки "Шаг вперед" и "Шаг назад"
-            }
-
-            if (DisplayCanvas != null)
-            {
-                DisplayCanvas.Children.Clear();
-            }
+            DisplayCanvas?.Children.Clear();
             DrawHanoiRods();
-            DrawDisks(_diskCount); // Используется количество дисков, заданное ранее
+            DrawDisks(_diskCount);
         }
 
-        // Обработчик кнопки "Шаг вперед"
-        private void StepForwardButton_Click(object sender, RoutedEventArgs e)
+        private void UpdateButtonStates()
         {
-            // Временная заглушка
-            MessageBox.Show("Функция 'Шаг вперед' пока в разработке.");
-        }
-
-        // Обработчик кнопки "Шаг назад"
-        private void StepBackButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Временная заглушка
-            MessageBox.Show("Функция 'Шаг назад' пока в разработке.");
+            if (_isAutoMode)
+            {
+                StepForwardButton.IsEnabled = false;
+                StepBackButton.IsEnabled = false;
+                StartHanoiButton.IsEnabled = false;
+                StopButton.IsEnabled = true;
+            }
+            else
+            {
+                StepForwardButton.IsEnabled = _moves != null && _currentMoveIndex < _moves.Count;
+                StepBackButton.IsEnabled = _moves != null && _currentMoveIndex > 0;
+                StartHanoiButton.IsEnabled = true;
+                StopButton.IsEnabled = false;
+            }
         }
         
-        // Отрисовка выбранного фрактала
+        private async void StepForwardButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isAutoMode)
+            {
+                MessageBox.Show("Невозможно выполнить шаг вперед в автоматическом режиме.");
+                return;
+            }
+
+            if (_moves != null && _currentMoveIndex < _moves.Count)
+            {
+                var parsedMove = ParseMove(_moves[_currentMoveIndex]);
+                if (parsedMove.HasValue)
+                {
+                    await MoveDisk(parsedMove.Value.DiskNumber, parsedMove.Value.FromRod, parsedMove.Value.ToRod);
+                    _currentMoveIndex++;
+                    UpdateButtonStates();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Достигнут конец списка перемещений.");
+            }
+        }
+
+        private async void StepBackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isAutoMode)
+            {
+                MessageBox.Show("Невозможно выполнить шаг назад в автоматическом режиме.");
+                return;
+            }
+
+            if (_moves != null && _currentMoveIndex > 0)
+            {
+                _currentMoveIndex--;
+                var parsedMove = ParseMove(_moves[_currentMoveIndex]);
+                if (parsedMove.HasValue)
+                {
+                    await MoveDisk(parsedMove.Value.DiskNumber, parsedMove.Value.ToRod, parsedMove.Value.FromRod);
+                    UpdateButtonStates();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Вы находитесь в начале списка перемещений.");
+            }
+        }
+        
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isAutoMode)
+            {
+                _isAutoMode = false;
+                UpdateButtonStates();
+            }
+        }
+        
         private void GenerateFractalButton_Click(object sender, RoutedEventArgs e)
         {
             if (int.TryParse(RecursionDepth.Text, out int depth) && depth >= 0)
             {
-                switch (FractalSelector.SelectedIndex)
+                _fractal = FractalSelector.SelectedIndex switch
                 {
-                    case 0:
-                        _fractal = new SierpinskiCarpet(DisplayCanvas);
-                        break;
-                    case 1:
-                        _fractal = new LeviCurve(DisplayCanvas);
-                        break;
-                    default:
-                        MessageBox.Show("Выберите фрактал.");
-                        return;
+                    0 => new SierpinskiCarpet(DisplayCanvas),
+                    1 => new LeviCurve(DisplayCanvas),
+                    _ => null
+                };
+
+                if (_fractal == null)
+                {
+                    MessageBox.Show("Выберите фрактал.");
+                    return;
                 }
 
-                if (DisplayCanvas != null)
-                {
-                    DisplayCanvas.Children.Clear();
-                    _fractal.DrawFractal(depth);
-                }
+                DisplayCanvas?.Children.Clear();
+                _fractal.DrawFractal(depth);
             }
             else
             {
                 MessageBox.Show("Введите корректную глубину рекурсии.");
             }
         }
+        
+        private async void StartHanoiButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(DiskCount.Text, out _diskCount) && _diskCount > 0)
+            {
+                DisplayCanvas.Children.Clear();
+                DrawHanoiRods();
+                DrawDisks(_diskCount);
 
-        // Отрисовка стержней для Ханойских башен
+                _hanoiTowers = new HanoiTowers();
+                _hanoiTowers.Solve(_diskCount, "A", "B", "C");
+
+                _moves = _hanoiTowers.GetMoves().ToList();
+                _currentMoveIndex = 0;
+                _isAutoMode = true;
+
+                UpdateButtonStates();
+
+                await DisplayMoves();
+
+                _isAutoMode = false;
+                UpdateButtonStates();
+            }
+            else
+            {
+                MessageBox.Show("Введите корректное количество дисков.");
+            }
+        }
+        
         private void DrawHanoiRods()
         {
             if (DisplayCanvas == null) return;
@@ -143,22 +212,21 @@ namespace FractalApp
                 Canvas.SetLeft(rod, canvasCenter + i * rodSpacing - _rodWidth / 2);
                 Canvas.SetTop(rod, DisplayCanvas.Height - _rodHeight - 20);
                 DisplayCanvas.Children.Add(rod);
-
+                
                 var baseRod = new Rectangle
                 {
-                    Width = _rodWidth * 5,
-                    Height = _rodWidth * 1.5,
-                    Fill = Brushes.Black
+                    Width = _rodWidth * 6,
+                    Height = _rodWidth * 2,
+                    Fill = Brushes.SaddleBrown 
                 };
-                Canvas.SetLeft(baseRod, canvasCenter + i * rodSpacing - (_rodWidth * 5) / 2);
+                Canvas.SetLeft(baseRod, canvasCenter + i * rodSpacing - (_rodWidth * 6) / 2);
                 Canvas.SetTop(baseRod, DisplayCanvas.Height - 20);
                 DisplayCanvas.Children.Add(baseRod);
 
                 _rodPositions[i + 1] = canvasCenter + i * rodSpacing;
             }
         }
-
-        // Отрисовка дисков на первом стержне
+        
         private void DrawDisks(int diskCount)
         {
             if (DisplayCanvas == null) return;
@@ -169,6 +237,16 @@ namespace FractalApp
             double minDiskWidth = 50;
             double diskWidthStep = (maxDiskWidth - minDiskWidth) / (diskCount - 1);
 
+            Brush[] diskColors = {
+                Brushes.Red,
+                Brushes.Brown,
+                Brushes.Yellow,
+                Brushes.Green,
+                Brushes.LightGreen,
+                Brushes.LightBlue,
+                Brushes.Blue
+            };
+
             for (int i = 0; i < diskCount; i++)
             {
                 double diskWidth = maxDiskWidth - i * diskWidthStep;
@@ -177,69 +255,64 @@ namespace FractalApp
                 {
                     Width = diskWidth,
                     Height = _diskHeight,
-                    Fill = Brushes.Black
+                    Fill = diskColors[i % diskColors.Length]
                 };
 
                 Canvas.SetLeft(disk, rodX - diskWidth / 2);
                 Canvas.SetTop(disk, baseY - (i + 1) * _diskHeight);
 
-                disk.Tag = new DiskInfo { CurrentRod = 0, PositionOnRod = i };
+                int diskNumber = diskCount - i;
+
+                disk.Tag = new DiskInfo { CurrentRod = 0, PositionOnRod = i, DiskNumber = diskNumber };
                 DisplayCanvas.Children.Add(disk);
             }
         }
-
-        // Запуск решения задачи Ханойских башен
-        private async void StartHanoiButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (int.TryParse(DiskCount.Text, out _diskCount) && _diskCount > 0)
-            {
-                _hanoiTowers = new HanoiTowers();
-                _hanoiTowers.Solve(_diskCount, "A", "B", "C");
-                await DisplayMoves();
-            }
-            else
-            {
-                MessageBox.Show("Введите корректное количество дисков.");
-            }
-        }
-
-        // Отображение движения дисков
+        
         private async Task DisplayMoves()
         {
-            foreach (var move in _hanoiTowers.GetMoves())
+            while (_currentMoveIndex < _moves.Count && _isAutoMode)
             {
-                var parsedMove = ParseMove(move);
+                var parsedMove = ParseMove(_moves[_currentMoveIndex]);
                 if (parsedMove.HasValue)
                 {
-                    await MoveDisk(parsedMove.Value.Disk, parsedMove.Value.FromRod, parsedMove.Value.ToRod);
-                    await Task.Delay(500);
+                    await MoveDisk(parsedMove.Value.DiskNumber, parsedMove.Value.FromRod, parsedMove.Value.ToRod);
+                    _currentMoveIndex++;
+                    UpdateButtonStates();
+                    await Task.Delay(500); // Задержка между перемещениями
                 }
-            }
-        }
-
-        // Перемещение диска
-        private async Task MoveDisk(int diskNumber, int fromRod, int toRod)
-        {
-            foreach (UIElement element in DisplayCanvas.Children)
-            {
-                if (element is Ellipse disk && disk.Tag is DiskInfo info && info.CurrentRod == fromRod && info.PositionOnRod == diskNumber)
+                else
                 {
-                    Canvas.SetTop(disk, Canvas.GetTop(disk) - 50);
-                    await Task.Delay(200);
-
-                    Canvas.SetLeft(disk, _rodPositions[toRod] - disk.Width / 2);
-                    await Task.Delay(200);
-
-                    int newPosition = GetNextAvailablePosition(toRod);
-                    Canvas.SetTop(disk, DisplayCanvas.Height - _rodHeight - 20 - newPosition * _diskHeight);
-                    info.CurrentRod = toRod;
-                    info.PositionOnRod = newPosition;
                     break;
                 }
             }
         }
+        
+        private Task MoveDisk(int diskNumber, int fromRod, int toRod)
+        {
+            return Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                foreach (UIElement element in DisplayCanvas.Children)
+                {
+                    if (element is Ellipse disk && disk.Tag is DiskInfo info && info.CurrentRod == fromRod && info.DiskNumber == diskNumber)
+                    {
+                        int newPosition = GetNextAvailablePosition(toRod);
 
-        // Определение следующей доступной позиции на стержне
+                        info.CurrentRod = toRod;
+                        info.PositionOnRod = newPosition;
+
+                        double rodX = _rodPositions[toRod];
+                        double baseY = DisplayCanvas.Height - 20;
+                        double diskY = baseY - (newPosition + 1) * _diskHeight;
+
+                        Canvas.SetLeft(disk, rodX - disk.Width / 2);
+                        Canvas.SetTop(disk, diskY);
+
+                        break;
+                    }
+                }
+            }).Task;
+        }
+        
         private int GetNextAvailablePosition(int rod)
         {
             int maxPosition = -1;
@@ -255,16 +328,15 @@ namespace FractalApp
             }
             return maxPosition + 1;
         }
-
-        // Парсинг хода перемещения
-        private (int Disk, int FromRod, int ToRod)? ParseMove(string move)
+        
+        private (int DiskNumber, int FromRod, int ToRod)? ParseMove(string move)
         {
             string[] parts = move.Split(' ');
-            if (parts.Length == 5 && int.TryParse(parts[1], out int disk))
+            if (parts.Length == 7 && int.TryParse(parts[2], out int disk))
             {
-                int fromRod = parts[3] == "A" ? 0 : (parts[3] == "B" ? 1 : 2);
-                int toRod = parts[4] == "A" ? 0 : (parts[4] == "B" ? 1 : 2);
-                return (disk - 1, fromRod, toRod);
+                int fromRod = parts[4] == "A" ? 0 : (parts[4] == "B" ? 1 : 2);
+                int toRod = parts[6] == "A" ? 0 : (parts[6] == "B" ? 1 : 2);
+                return (disk, fromRod, toRod);
             }
             return null;
         }
@@ -273,6 +345,8 @@ namespace FractalApp
         {
             public int CurrentRod { get; set; }
             public int PositionOnRod { get; set; }
+            public int DiskNumber { get; set; }
         }
+
     }
 }
