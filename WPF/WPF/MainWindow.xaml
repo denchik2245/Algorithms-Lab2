@@ -1,6 +1,7 @@
 ﻿<Window x:Class="FractalApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         Title="Визуализация фракталов и Ханойских башен" Width="1500" Height="1000">
     <Grid Background="White">
         <!-- Разделение основной сетки на три строки -->
@@ -11,9 +12,24 @@
         </Grid.RowDefinitions>
 
         <!-- Верхняя часть окна с областью отрисовки -->
-        <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,50,0,0">
-            <!-- Поле для отрисовки -->
-            <Canvas Name="DisplayCanvas" Background="White" Width="1000" Height="500" />
+        <Grid Grid.Row="1">
+            <!-- Поле для отрисовки фракталов -->
+            <Canvas Name="DisplayCanvas" Background="White" Width="1000" Height="500" Visibility="Visible" />
+    
+            <!-- График для Ханойских башен -->
+            <lvc:CartesianChart x:Name="MyChart" 
+                                LegendLocation="None" 
+                                Margin="10"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Visibility="Collapsed">
+                <lvc:CartesianChart.AxisX>
+                    <lvc:Axis Title="Количество колец"/>
+                </lvc:CartesianChart.AxisX>
+                <lvc:CartesianChart.AxisY>
+                    <lvc:Axis Title="Время выполнения (мс)"/>
+                </lvc:CartesianChart.AxisY>
+            </lvc:CartesianChart>
         </Grid>
         
         <!-- Нижняя панель -->
@@ -31,6 +47,7 @@
                     <StackPanel Width="190" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,30,0">
                         <RadioButton Name="FractalRadioButton" Content="Отрисовка фракталов" IsChecked="True" Checked="FractalRadioButton_Checked" FontSize="16" Margin="0,5,0,0" VerticalContentAlignment="Center"/>
                         <RadioButton Name="HanoiRadioButton" Content="Ханойские башни" Checked="HanoiRadioButton_Checked" FontSize="16" Margin="0,5,0,0" VerticalContentAlignment="Center"/>
+                        <RadioButton Name="GraphsRadioButton" Content="Графики" Checked="GraphsRadioButton_Checked" FontSize="16" Margin="0,5,0,0" VerticalContentAlignment="Center"/>
                     </StackPanel>
 
                     <!-- Вертикальная линия-разделитель -->
@@ -79,7 +96,7 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#3B3B3B" /> <!-- Серый фон при наведении -->
+                                                    <Setter TargetName="border" Property="Background" Value="#3B3B3B" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -89,7 +106,7 @@
                         </Button.Style>
                     </Button>
 
-                    <Button Name="StepBackButton" Content="Шаг назад" FontSize="16" FontWeight="Medium" Click="StepBackButton_Click" BorderThickness="0">
+                    <Button Name="StepBackButton" Content="Шаг назад" FontSize="16" FontWeight="Medium" Click="StepBackButton_Click"  BorderThickness="0">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Background" Value="Black"/>
@@ -110,7 +127,7 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#3B3B3B" /> <!-- Серый фон при наведении -->
+                                                    <Setter TargetName="border" Property="Background" Value="#3B3B3B" />
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -125,7 +142,7 @@
                 <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="30,30,30,30">
                     
                     <!-- Поле для глубины рекурсии -->
-                    <StackPanel VerticalAlignment="Bottom" Margin="0,0,30,0" Name="RecursionDepthPanel">
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,30,0" Name="RecursionDepthPanel">
                         <TextBlock Text="Ранг рекурсии" Foreground="Black" FontSize="16" FontWeight="Light" TextWrapping="Wrap" />
                         <Border Height="40" Width="200" Background="White" CornerRadius="10" Padding="0" Margin="0,10,0,0">
                             <TextBox x:Name="RecursionDepth" 
@@ -191,15 +208,14 @@
                         </Button.Style>
                     </Button>
                     
-                    <!-- Новая кнопка "Автоматически" для Ханойских башен -->
+                    <!-- Кнопка "Автоматически" для Ханойских башен -->
                     <Button Name="StartHanoiButton" 
                             Click="StartHanoiButton_Click" 
                             Content="Автоматически" 
                             FontSize="16" 
                             FontWeight="Medium" 
                             BorderThickness="0"
-                            Visibility="Collapsed"> <!-- Скрываем кнопку по умолчанию -->
-                        <!-- Стилизация кнопки, аналогичная кнопке "Сгенерировать" -->
+                            Visibility="Collapsed">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Background" Value="#478ECC" />
@@ -230,6 +246,7 @@
                         </Button.Style>
                     </Button>
                     
+                    <!-- Кнопка "Отмена" для Ханойских башен -->
                     <Button Name="StopButton" Margin="10,0,0,0"
                             Click="StopButton_Click" 
                             Content="Стоп" 
@@ -267,8 +284,82 @@
                         </Button.Style>
                     </Button>
 
+                    <!-- Поле для ввода максимального количества колец (слева) и количества запусков (справа) -->
+                    <StackPanel VerticalAlignment="Bottom" Margin="0,0,30,0" Name="GraphControls" Orientation="Horizontal" Visibility="Collapsed">
+    
+                        <!-- Поле для ввода "Максимальное количество колец" -->
+                        <StackPanel Orientation="Vertical" Margin="0,0,30,0">
+                            <TextBlock Text="Максимальное количество колец" Foreground="Black" FontSize="16" FontWeight="Light" TextWrapping="Wrap" />
+                            <Border Height="40" Width="250" Background="White" CornerRadius="10" Padding="0" Margin="0,10,0,0">
+                                <TextBox x:Name="MaxDisksTextBox" 
+                                         Text="10" 
+                                         FontSize="16" 
+                                         FontWeight="Light" 
+                                         Foreground="Black" 
+                                         Background="Transparent" 
+                                         BorderThickness="0" 
+                                         Margin="12,10,12,10" />
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Поле для ввода "Количество запусков" -->
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Количество запусков" Foreground="Black" FontSize="16" FontWeight="Light" TextWrapping="Wrap" />
+                            <Border Height="40" Width="200" Background="White" CornerRadius="10" Padding="0" Margin="0,10,0,0">
+                                <TextBox x:Name="RunsTextBox" 
+                                         Text="5" 
+                                         FontSize="16" 
+                                         FontWeight="Light" 
+                                         Foreground="Black" 
+                                         Background="Transparent" 
+                                         BorderThickness="0" 
+                                         Margin="12,10,12,10" />
+                            </Border>
+                        </StackPanel>
+    
+                    </StackPanel>
+
+                    <!-- Кнопка "Начать расчет" -->
+                    <Button Name="StartCalculationButton" 
+                            Click="StartButton_Click" 
+                            Content="Начать расчет" 
+                            FontSize="16" 
+                            FontWeight="Medium" 
+                            BorderThickness="0" 
+                            Visibility="Collapsed"
+                            Margin="0,0,30,0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#478ECC" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="BorderBrush" Value="Transparent" />
+                                <Setter Property="BorderThickness" Value="0" />
+                                <Setter Property="Padding" Value="50,28,50,28" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border" 
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Padding="{TemplateBinding Padding}" 
+                                                    CornerRadius="10">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#3B6FA0" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
     </Grid>
 </Window>
+

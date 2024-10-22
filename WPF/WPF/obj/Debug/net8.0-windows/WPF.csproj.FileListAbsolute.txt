@@ -3,8 +3,6 @@ D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\bin\Debug\net8.0-windows\WPF.deps.jso
 D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\bin\Debug\net8.0-windows\WPF.runtimeconfig.json
 D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\bin\Debug\net8.0-windows\WPF.dll
 D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\bin\Debug\net8.0-windows\WPF.pdb
-D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\MainWindow.baml
-D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\MainWindow.g.cs
 D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\App.g.cs
 D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\WPF_MarkupCompile.cache
 D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\WPF.g.resources
@@ -18,3 +16,9 @@ D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\WPF.pdb
 D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\WPF.genruntimeconfig.cache
 D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\ref\WPF.dll
 D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\WPF.sourcelink.json
+D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\MainWindow.baml
+D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\MainWindow.g.cs
+D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\bin\Debug\net8.0-windows\LiveCharts.dll
+D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\bin\Debug\net8.0-windows\LiveCharts.Wpf.dll
+D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\WPF.csproj.AssemblyReference.cache
+D:\Study\Nikolasha\Algorithms-Lab2\WPF\WPF\obj\Debug\net8.0-windows\WPF.csproj.Up2Date

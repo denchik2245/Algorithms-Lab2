@@ -4,6 +4,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using LiveCharts;
+using LiveCharts.Wpf;
 using Logic;
 
 namespace FractalApp
@@ -33,36 +35,64 @@ namespace FractalApp
                 element.Visibility = visibility;
             }
         }
-
-        // Обработчики переключения режимов
+        
         private void FractalRadioButton_Checked(object sender, RoutedEventArgs e)
         {
+            SetVisibility(DisplayCanvas, Visibility.Visible);
+            SetVisibility(MyChart, Visibility.Collapsed);
             SetVisibility(FractalControls, Visibility.Visible);
             SetVisibility(RecursionDepthPanel, Visibility.Visible);
             SetVisibility(HanoiControls, Visibility.Collapsed);
-            SetVisibility(HanoiButtonsPanel, Visibility.Collapsed);
-            SetVisibility(StartHanoiButton, Visibility.Collapsed);
+            SetVisibility(GraphControls, Visibility.Collapsed);
             SetVisibility(ButtonCalculation, Visibility.Visible);
+            SetVisibility(StartHanoiButton, Visibility.Collapsed);
             SetVisibility(StopButton, Visibility.Collapsed);
+            SetVisibility(StepBackButton, Visibility.Collapsed);
+            SetVisibility(StepForwardButton, Visibility.Collapsed);
+            SetVisibility(StartCalculationButton, Visibility.Collapsed); 
 
             DisplayCanvas?.Children.Clear();
         }
 
         private void HanoiRadioButton_Checked(object sender, RoutedEventArgs e)
         {
+            SetVisibility(DisplayCanvas, Visibility.Visible);
+            SetVisibility(MyChart, Visibility.Collapsed);
             SetVisibility(FractalControls, Visibility.Collapsed);
             SetVisibility(RecursionDepthPanel, Visibility.Collapsed);
             SetVisibility(HanoiControls, Visibility.Visible);
             SetVisibility(HanoiButtonsPanel, Visibility.Visible);
+            SetVisibility(GraphControls, Visibility.Collapsed);
             SetVisibility(StartHanoiButton, Visibility.Visible);
             SetVisibility(ButtonCalculation, Visibility.Collapsed);
+            SetVisibility(StartCalculationButton, Visibility.Collapsed); 
             SetVisibility(StopButton, Visibility.Visible);
+            SetVisibility(StepBackButton, Visibility.Visible);
+            SetVisibility(StepForwardButton, Visibility.Visible);
 
             DisplayCanvas?.Children.Clear();
             DrawHanoiRods();
             DrawDisks(_diskCount);
         }
 
+
+        private void GraphsRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            SetVisibility(DisplayCanvas, Visibility.Collapsed);
+            SetVisibility(MyChart, Visibility.Visible);
+            SetVisibility(FractalControls, Visibility.Collapsed);
+            SetVisibility(RecursionDepthPanel, Visibility.Collapsed);
+            SetVisibility(HanoiControls, Visibility.Collapsed);
+            SetVisibility(HanoiButtonsPanel, Visibility.Collapsed);
+            SetVisibility(GraphControls, Visibility.Visible);
+            SetVisibility(StartCalculationButton, Visibility.Visible);
+            SetVisibility(ButtonCalculation, Visibility.Collapsed);
+            SetVisibility(StartHanoiButton, Visibility.Collapsed);
+            SetVisibility(StopButton, Visibility.Collapsed);
+
+            ConfigureChart();
+        }
+        
         private void UpdateButtonStates()
         {
             if (_isAutoMode)
@@ -79,6 +109,86 @@ namespace FractalApp
                 StartHanoiButton.IsEnabled = true;
                 StopButton.IsEnabled = false;
             }
+        }
+        
+        private void ConfigureChart()
+        {
+            MyChart.AxisX.Clear();
+            MyChart.AxisX.Add(new Axis
+            {
+                Title = "Количество колец",
+                LabelFormatter = value => value.ToString("F0"),
+                MinValue = 0
+            });
+
+            MyChart.AxisY.Clear();
+            MyChart.AxisY.Add(new Axis
+            {
+                Title = "Время выполнения (мс)",
+                LabelFormatter = value => value.ToString("F3"),
+                MinValue = 0
+            });
+
+            MyChart.AnimationsSpeed = TimeSpan.FromMilliseconds(300);
+            MyChart.Zoom = ZoomingOptions.Xy;
+            MyChart.LegendLocation = LegendLocation.None;
+        }
+
+        private void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            int maxDisks = int.Parse(MaxDisksTextBox.Text);
+            int runs = int.Parse(RunsTextBox.Text);
+
+            List<double> times = new List<double>();
+            List<double> disks = new List<double>();
+
+            HanoiTowers hanoi = new HanoiTowers();
+
+            for (int n = 1; n <= maxDisks; n++) // Проверяем до maxDisks включительно
+            {
+                double totalTime = 0;
+
+                for (int run = 0; run < runs; run++)
+                {
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
+
+                    hanoi.Solve(n, "A", "B", "C");
+
+                    // Искусственная задержка для визуализации на графике
+                    System.Threading.Thread.Sleep(50);
+
+                    watch.Stop();
+                    totalTime += watch.ElapsedMilliseconds;
+                }
+
+                disks.Add(n); // Добавляем количество колец
+                times.Add(totalTime / runs); // Вычисляем среднее время выполнения
+            }
+
+            // Обновляем график
+            MyChart.Series = new SeriesCollection
+            {
+                new LineSeries
+                {
+                    Title = "Время выполнения",
+                    Values = new ChartValues<double>(times),
+                    PointGeometry = DefaultGeometries.Circle,
+                    PointGeometrySize = 5
+                }
+            };
+
+            // Обновляем ось X для отображения количества дисков
+            MyChart.AxisX.Clear();
+            MyChart.AxisX.Add(new Axis
+            {
+                Title = "Количество колец",
+                LabelFormatter = value => value.ToString("F0"),
+                MinValue = 1,
+                MaxValue = maxDisks + 1, // Добавляем 1, чтобы гарантировать включение последнего значения
+            });
+
+            // Ось Y уже настроена на отображение времени в миллисекундах
+            MyChart.AxisY[0].Title = "Время выполнения (мс)";
         }
         
         private async void StepForwardButton_Click(object sender, RoutedEventArgs e)
@@ -278,7 +388,7 @@ namespace FractalApp
                     await MoveDisk(parsedMove.Value.DiskNumber, parsedMove.Value.FromRod, parsedMove.Value.ToRod);
                     _currentMoveIndex++;
                     UpdateButtonStates();
-                    await Task.Delay(500); // Задержка между перемещениями
+                    await Task.Delay(150);
                 }
                 else
                 {
