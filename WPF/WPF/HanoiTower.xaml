@@ -1,0 +1,17 @@
+﻿<Window x:Class="WPF.HanoiTower"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:WPF"
+        mc:Ignorable="d"
+        Title="HanoiTower" Height="450" Width="800">
+    <Grid>
+        <!-- Холст для отрисовки башен и дисков -->
+        <Canvas Name="canvas" Background="LightGray" Margin="10"/>
+
+        <!-- Кнопка для запуска алгоритма -->
+        <Button Content="Start" Width="100" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Center" Click="button1_Click"/>
+
+    </Grid>
+</Window>
