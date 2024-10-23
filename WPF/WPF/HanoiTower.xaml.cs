@@ -6,19 +6,27 @@ using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Windows.Media;
 
-namespace WPF;
-
-public partial class HanoiTower : Window
+namespace WPF
 {
-    private Stack<int>[] h;  // Башни, хранящие диски
-    private Dictionary<int, Rectangle> diskVisuals; // Словарь для хранения визуальных элементов дисков
-
-    public HanoiTower()
+    public partial class HanoiTower : Window
     {
-        InitializeComponent();
-    }
-private async void button1_Click(object sender, RoutedEventArgs e)
+        private Stack<int>[] h;  // Башни, хранящие диски
+        private Dictionary<int, Rectangle> diskVisuals; // Словарь для хранения визуальных элементов дисков
+
+        public HanoiTower()
         {
+            InitializeComponent();
+        }
+
+        private async void button1_Click(object sender, RoutedEventArgs e)
+        {
+            // Читаем количество дисков из текстового поля
+            if (!int.TryParse(diskCountTextBox.Text, out int diskCount) || diskCount < 1)
+            {
+                MessageBox.Show("Please enter a valid number of disks (positive integer).", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             // Инициализируем башни
             h = new Stack<int>[3];
             h[0] = new Stack<int>();
@@ -27,8 +35,11 @@ private async void button1_Click(object sender, RoutedEventArgs e)
 
             diskVisuals = new Dictionary<int, Rectangle>();
 
-            // Создаем 8 дисков и добавляем их на первую башню
-            for (int i = 8; i >= 1; i--)
+            // Очищаем холст перед созданием новых дисков
+            canvas.Children.Clear();
+
+            // Создаем диски и добавляем их на первую башню
+            for (int i = diskCount; i >= 1; i--)
             {
                 h[0].Push(i);
                 CreateDisk(i);
@@ -36,7 +47,7 @@ private async void button1_Click(object sender, RoutedEventArgs e)
             }
 
             // Запускаем алгоритм решения
-            await Hanoi(1, 3, 8);
+            await Hanoi(1, 3, diskCount);
         }
 
         private async Task Hanoi(int from, int to, int diskCount)
@@ -119,12 +130,10 @@ private async void button1_Click(object sender, RoutedEventArgs e)
                     await Task.Delay(10); // Задержка между шагами
                 }
             }
-            
             else
             {
                 MessageBox.Show($"Rectangle for disk {diskSize} not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
-
-
+}
