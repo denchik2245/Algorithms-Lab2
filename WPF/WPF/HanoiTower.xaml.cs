@@ -119,6 +119,7 @@ private async void button1_Click(object sender, RoutedEventArgs e)
                     await Task.Delay(10); // Задержка между шагами
                 }
             }
+            
             else
             {
                 MessageBox.Show($"Rectangle for disk {diskSize} not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);

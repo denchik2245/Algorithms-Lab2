@@ -10,6 +10,7 @@
         <!-- Холст для отрисовки башен и дисков -->
         <Canvas Name="canvas" Background="LightGray" Margin="10"/>
 
+       
         <!-- Кнопка для запуска алгоритма -->
         <Button Content="Start" Width="100" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Center" Click="button1_Click"/>
 
