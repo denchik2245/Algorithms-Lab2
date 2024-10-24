@@ -18,22 +18,18 @@ namespace Logic
         public void DrawFractal(int depth)
         {
             _canvas.Children.Clear();
-
-            // Применяем глобальное масштабирование к Canvas
-            double scalingFactor = 0.75; // Масштабируем фрактал до 75% от исходного размера
+            
+            double scalingFactor = 0.75;
             ScaleTransform scale = new ScaleTransform(scalingFactor, scalingFactor);
             _canvas.RenderTransform = scale;
-
-            // Получаем ширину и высоту Canvas
+            
             double canvasWidth = _canvas.ActualWidth;
             double canvasHeight = _canvas.ActualHeight;
-
-            // Вычисляем начальные точки для центрирования фрактала по горизонтали и вертикали
-            double startX = (canvasWidth / 4) / scalingFactor;  // Центрирование по горизонтали с учетом масштаба
+            
+            double startX = (canvasWidth / 4) / scalingFactor;
             double endX = (3 * canvasWidth / 4) / scalingFactor;
-            double startY = (canvasHeight / 1.7) / scalingFactor; // Центрирование по вертикали с учетом масштаба
-
-            // Корректируем начальные точки, чтобы фрактал находился по центру вертикали
+            double startY = (canvasHeight / 1.7) / scalingFactor;
+            
             startY += (canvasHeight / 4) / scalingFactor;
 
             Point startPoint = new Point(startX, startY);
@@ -46,7 +42,6 @@ namespace Logic
         {
             if (depth == 0)
             {
-                // Рисуем линию от начальной до конечной точки
                 var line = new Line
                 {
                     X1 = startPoint.X,
@@ -60,12 +55,10 @@ namespace Logic
             }
             else
             {
-                // Находим середину отрезка и смещаем вверх для создания изгиба
                 var middleX = (startPoint.X + endPoint.X) / 2;
                 var middleY = (startPoint.Y + endPoint.Y) / 2;
                 var middlePoint = new Point(middleX + (endPoint.Y - startPoint.Y) / 2, middleY - (endPoint.X - startPoint.X) / 2);
-
-                // Рекурсивно рисуем две линии
+                
                 DrawLevi(depth - 1, startPoint, middlePoint);
                 DrawLevi(depth - 1, middlePoint, endPoint);
             }

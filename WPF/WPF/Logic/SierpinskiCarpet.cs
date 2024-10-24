@@ -25,7 +25,6 @@ namespace Logic
         {
             if (depth == 0)
             {
-                // Рисуем прямоугольник
                 var rect = new Rectangle
                 {
                     Width = width,
@@ -38,7 +37,6 @@ namespace Logic
             }
             else
             {
-                // Разделяем на 9 частей, центральную часть оставляем пустой
                 double newWidth = width / 3;
                 double newHeight = height / 3;
 
@@ -48,7 +46,6 @@ namespace Logic
                     {
                         if (i == 1 && j == 1)
                         {
-                            // Центральный квадрат
                             continue;
                         }
                         DrawCarpet(depth - 1, x + i * newWidth, y + j * newHeight, newWidth, newHeight);

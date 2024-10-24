@@ -11,13 +11,13 @@ namespace Logic
         {
             Moves = new List<string>();
         }
-        
+
         public void Solve(int n, string source, string auxiliary, string destination)
         {
             Moves.Clear();
             MoveDisks(n, source, auxiliary, destination);
         }
-        
+
         private void MoveDisks(int n, string source, string auxiliary, string destination)
         {
             if (n == 1)
@@ -31,10 +31,16 @@ namespace Logic
                 MoveDisks(n - 1, auxiliary, source, destination);
             }
         }
-        
+
         public List<string> GetMoves()
         {
             return Moves;
+        }
+
+        // Новый метод для получения количества ходов
+        public int GetMoveCount()
+        {
+            return Moves.Count;
         }
     }
 }

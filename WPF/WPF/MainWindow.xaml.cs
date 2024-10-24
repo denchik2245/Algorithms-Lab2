@@ -36,6 +36,7 @@ namespace FractalApp
             }
         }
         
+        // Радиокнопка "Отрисовка фракталов"
         private void FractalRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             SetVisibility(DisplayCanvas, Visibility.Visible);
@@ -51,9 +52,13 @@ namespace FractalApp
             SetVisibility(StepForwardButton, Visibility.Collapsed);
             SetVisibility(StartCalculationButton, Visibility.Collapsed); 
 
+            // Скрыть только радиокнопки типа графика
+            SetVisibility(GraphTypeRadioButtons, Visibility.Collapsed);
+            
             DisplayCanvas?.Children.Clear();
         }
 
+        // Радиокнопка "Ханойские башни"
         private void HanoiRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             SetVisibility(DisplayCanvas, Visibility.Visible);
@@ -70,12 +75,15 @@ namespace FractalApp
             SetVisibility(StepBackButton, Visibility.Visible);
             SetVisibility(StepForwardButton, Visibility.Visible);
 
+            // Скрыть только радиокнопки типа графика
+            SetVisibility(GraphTypeRadioButtons, Visibility.Collapsed);
+
             DisplayCanvas?.Children.Clear();
             DrawHanoiRods();
             DrawDisks(_diskCount);
         }
 
-
+        // Радиокнопка "Графики"
         private void GraphsRadioButton_Checked(object sender, RoutedEventArgs e)
         {
             SetVisibility(DisplayCanvas, Visibility.Collapsed);
@@ -90,7 +98,30 @@ namespace FractalApp
             SetVisibility(StartHanoiButton, Visibility.Collapsed);
             SetVisibility(StopButton, Visibility.Collapsed);
 
+            // Показать радиокнопки типа графика
+            SetVisibility(GraphTypeRadioButtons, Visibility.Visible);
+
+            // Установить по умолчанию "Время визуализации"
+            VisualizationTimeRadioButton.IsChecked = true;
+
             ConfigureChart();
+        }
+        
+        // Обработчик для новых радиокнопок "Тип графика"
+        private void GraphTypeRadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (VisualizationTimeRadioButton.IsChecked == true)
+            {
+                ConfigureChartVisualizationTime();
+            }
+            else if (AlgorithmTimeRadioButton.IsChecked == true)
+            {
+                ConfigureChartAlgorithmTime();
+            }
+            else if (StepsCountRadioButton.IsChecked == true)
+            {
+                ConfigureChartStepsCount();
+            }
         }
         
         private void UpdateButtonStates()
@@ -111,86 +142,7 @@ namespace FractalApp
             }
         }
         
-        private void ConfigureChart()
-        {
-            MyChart.AxisX.Clear();
-            MyChart.AxisX.Add(new Axis
-            {
-                Title = "Количество колец",
-                LabelFormatter = value => value.ToString("F0"),
-                MinValue = 0
-            });
-
-            MyChart.AxisY.Clear();
-            MyChart.AxisY.Add(new Axis
-            {
-                Title = "Время выполнения (мс)",
-                LabelFormatter = value => value.ToString("F3"),
-                MinValue = 0
-            });
-
-            MyChart.AnimationsSpeed = TimeSpan.FromMilliseconds(300);
-            MyChart.Zoom = ZoomingOptions.Xy;
-            MyChart.LegendLocation = LegendLocation.None;
-        }
-
-        private void StartButton_Click(object sender, RoutedEventArgs e)
-        {
-            int maxDisks = int.Parse(MaxDisksTextBox.Text);
-            int runs = int.Parse(RunsTextBox.Text);
-
-            List<double> times = new List<double>();
-            List<double> disks = new List<double>();
-
-            HanoiTowers hanoi = new HanoiTowers();
-
-            for (int n = 1; n <= maxDisks; n++) // Проверяем до maxDisks включительно
-            {
-                double totalTime = 0;
-
-                for (int run = 0; run < runs; run++)
-                {
-                    var watch = System.Diagnostics.Stopwatch.StartNew();
-
-                    hanoi.Solve(n, "A", "B", "C");
-
-                    // Искусственная задержка для визуализации на графике
-                    System.Threading.Thread.Sleep(50);
-
-                    watch.Stop();
-                    totalTime += watch.ElapsedMilliseconds;
-                }
-
-                disks.Add(n); // Добавляем количество колец
-                times.Add(totalTime / runs); // Вычисляем среднее время выполнения
-            }
-
-            // Обновляем график
-            MyChart.Series = new SeriesCollection
-            {
-                new LineSeries
-                {
-                    Title = "Время выполнения",
-                    Values = new ChartValues<double>(times),
-                    PointGeometry = DefaultGeometries.Circle,
-                    PointGeometrySize = 5
-                }
-            };
-
-            // Обновляем ось X для отображения количества дисков
-            MyChart.AxisX.Clear();
-            MyChart.AxisX.Add(new Axis
-            {
-                Title = "Количество колец",
-                LabelFormatter = value => value.ToString("F0"),
-                MinValue = 1,
-                MaxValue = maxDisks + 1, // Добавляем 1, чтобы гарантировать включение последнего значения
-            });
-
-            // Ось Y уже настроена на отображение времени в миллисекундах
-            MyChart.AxisY[0].Title = "Время выполнения (мс)";
-        }
-        
+        //Кнопка "Вперед"
         private async void StepForwardButton_Click(object sender, RoutedEventArgs e)
         {
             if (_isAutoMode)
@@ -215,6 +167,7 @@ namespace FractalApp
             }
         }
 
+        //Кнопка "Назад"
         private async void StepBackButton_Click(object sender, RoutedEventArgs e)
         {
             if (_isAutoMode)
@@ -239,6 +192,7 @@ namespace FractalApp
             }
         }
         
+        //Кнопка "Стоп"
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             if (_isAutoMode)
@@ -248,6 +202,7 @@ namespace FractalApp
             }
         }
         
+        //Генерация фракталов
         private void GenerateFractalButton_Click(object sender, RoutedEventArgs e)
         {
             if (int.TryParse(RecursionDepth.Text, out int depth) && depth >= 0)
@@ -274,6 +229,7 @@ namespace FractalApp
             }
         }
         
+        //Генерация Ханойских башен
         private async void StartHanoiButton_Click(object sender, RoutedEventArgs e)
         {
             if (int.TryParse(DiskCount.Text, out _diskCount) && _diskCount > 0)
@@ -302,6 +258,251 @@ namespace FractalApp
             }
         }
         
+        //График
+        private void ConfigureChart()
+        {
+            MyChart.AxisX.Clear();
+            MyChart.AxisX.Add(new Axis
+            {
+                Title = "Количество колец",
+                LabelFormatter = value => value.ToString("F0"),
+                MinValue = 0
+            });
+
+            MyChart.AxisY.Clear();
+            MyChart.AxisY.Add(new Axis
+            {
+                Title = "Время выполнения (сек)",  // Время в секундах
+                LabelFormatter = value => (value / 1000).ToString("F3"),  // Переводим миллисекунды в секунды, отображаем с 3 знаками после запятой
+                MinValue = 0
+            });
+
+            MyChart.AnimationsSpeed = TimeSpan.FromMilliseconds(300);
+            MyChart.Zoom = ZoomingOptions.Xy;
+            MyChart.LegendLocation = LegendLocation.None;
+        }
+
+        // Метод настройки графика для "Время визуализации"
+        private void ConfigureChartVisualizationTime()
+        {
+            ConfigureChart();
+            MyChart.AxisY[0].Title = "Время визуализации (сек)";
+            MyChart.Series.Clear();
+            
+            MyChart.Series.Add(new LineSeries
+            {
+                Title = "Время визуализации",
+                Values = new ChartValues<double>(),
+                PointGeometry = DefaultGeometries.Circle,
+                PointGeometrySize = 5,
+                Stroke = System.Windows.Media.Brushes.Blue,
+                Fill = new System.Windows.Media.SolidColorBrush(Color.FromArgb(50, 0, 0, 255)),
+            });
+            
+            // Настраиваем форматирование осей: переводим миллисекунды в секунды
+            MyChart.AxisY[0].LabelFormatter = value => (value / 1000).ToString("F3");  // Формат отображения в секундах
+        }
+        
+        // Метод настройки графика для "Время алгоритма"
+        private void ConfigureChartAlgorithmTime()
+        {
+            ConfigureChart();
+            MyChart.AxisY[0].Title = "Время алгоритма (мс)";  // Оставляем время в миллисекундах
+            MyChart.Series.Clear();
+    
+            MyChart.Series.Add(new LineSeries
+            {
+                Title = "Время алгоритма",
+                Values = new ChartValues<double>(),  // Проверьте, что сюда подаются корректные данные
+                PointGeometry = DefaultGeometries.Circle,
+                PointGeometrySize = 5,
+                Stroke = System.Windows.Media.Brushes.Green,
+                Fill = new System.Windows.Media.SolidColorBrush(Color.FromArgb(50, 0, 255, 0)),
+            });
+    
+            // Оставляем формат оси Y без деления на 1000
+            MyChart.AxisY[0].LabelFormatter = value => value.ToString("F3");  // Отображаем миллисекунды с тремя знаками после запятой
+        }
+        
+        // Метод настройки графика для "Количество шагов"
+        private void ConfigureChartStepsCount()
+        {
+            ConfigureChart();
+            MyChart.AxisY[0].Title = "Количество шагов";
+            MyChart.Series.Clear();
+            
+            MyChart.Series.Add(new LineSeries
+            {
+                Title = "Количество шагов",
+                Values = new ChartValues<double>(),
+                PointGeometry = DefaultGeometries.Circle,
+                PointGeometrySize = 5,
+                Stroke = System.Windows.Media.Brushes.Red,
+                Fill = new System.Windows.Media.SolidColorBrush(Color.FromArgb(50, 255, 0, 0)),
+            });
+            
+            MyChart.AxisY[0].LabelFormatter = value => value.ToString("F0");
+        }
+        
+        // Кнопка "Начать расчет"
+        private async void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!int.TryParse(MaxDisksTextBox.Text, out int maxDisks) || maxDisks <= 0)
+            {
+                MessageBox.Show("Пожалуйста, введите корректное положительное целое число для максимального количества колец.", "Ошибка ввода", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (VisualizationTimeRadioButton.IsChecked == true)
+            {
+                List<double> visualizationTimes = await MeasureVisualizationTime(maxDisks);
+                UpdateChartVisualizationTime(visualizationTimes);
+            }
+            else if (AlgorithmTimeRadioButton.IsChecked == true)
+            {
+                List<double> algorithmTimes = MeasureAlgorithmTime(maxDisks);
+                UpdateChartAlgorithmTime(algorithmTimes);
+            }
+            else if (StepsCountRadioButton.IsChecked == true)
+            {
+                List<int> stepsCounts = MeasureStepsCount(maxDisks);
+                UpdateChartStepsCount(stepsCounts);
+            }
+        }
+        
+        // Метод обновления графика для "Время визуализации"
+        private void UpdateChartVisualizationTime(List<double> visualizationTimes)
+        {
+            if (MyChart.Series.Count > 0 && MyChart.Series[0] is LineSeries visualizationSeries)
+            {
+                visualizationSeries.Values.Clear();
+                foreach (var time in visualizationTimes)
+                {
+                    visualizationSeries.Values.Add(time);
+                }
+            }
+
+            // Настройка меток оси X
+            MyChart.AxisX[0].Labels = Enumerable.Range(1, visualizationTimes.Count).Select(x => x.ToString()).ToArray();
+        }
+        
+        // Метод обновления графика для "Время алгоритма"
+        private void UpdateChartAlgorithmTime(List<double> algorithmTimes)
+        {
+            if (MyChart.Series.Count > 0 && MyChart.Series[0] is LineSeries algorithmSeries)
+            {
+                algorithmSeries.Values.Clear();
+                foreach (var time in algorithmTimes)
+                {
+                    algorithmSeries.Values.Add(time);
+                }
+            }
+
+            // Настройка меток оси X
+            MyChart.AxisX[0].Labels = Enumerable.Range(1, algorithmTimes.Count).Select(x => x.ToString()).ToArray();
+        }
+        
+        // Метод обновления графика для "Количество шагов"
+        private void UpdateChartStepsCount(List<int> stepsCounts)
+        {
+            if (MyChart.Series.Count > 0 && MyChart.Series[0] is LineSeries stepsSeries)
+            {
+                stepsSeries.Values.Clear();
+                foreach (var steps in stepsCounts)
+                {
+                    stepsSeries.Values.Add((double)steps); // Преобразование int в double
+                }
+            }
+
+            // Настройка меток оси X
+            MyChart.AxisX[0].Labels = Enumerable.Range(1, stepsCounts.Count).Select(x => x.ToString()).ToArray();
+        }
+        
+        // Метод измерения времени алгоритма (5 запусков, среднее время)
+        private List<double> MeasureAlgorithmTime(int maxDisks)
+        {
+            List<double> algorithmTimes = new List<double>();
+            HanoiTowers hanoi = new HanoiTowers();
+            int numberOfRuns = 10;  // Количество запусков
+
+            for (int n = 1; n <= maxDisks; n++)
+            {
+                double totalElapsedTime = 0;
+
+                // Проводим 5 запусков для текущего количества дисков
+                for (int run = 0; run < numberOfRuns; run++)
+                {
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
+
+                    hanoi.Solve(n, "A", "B", "C");
+
+                    watch.Stop();
+                    totalElapsedTime += watch.Elapsed.TotalMilliseconds;
+                }
+
+                // Вычисляем среднее время выполнения и добавляем его в список
+                double averageTime = totalElapsedTime / numberOfRuns;
+                algorithmTimes.Add(averageTime);
+            }
+
+            return algorithmTimes;
+        }
+
+        // Метод измерения времени визуализации (один запуск)
+        private async Task<List<double>> MeasureVisualizationTime(int maxDisks)
+        {
+            List<double> visualizationTimes = new List<double>();
+
+            for (int n = 1; n <= maxDisks; n++)
+            {
+                DisplayCanvas.Children.Clear();
+                DrawHanoiRods();
+                DrawDisks(n);
+
+                _hanoiTowers = new HanoiTowers();
+                _hanoiTowers.Solve(n, "A", "B", "C");
+
+                _moves = _hanoiTowers.GetMoves().ToList();
+                _currentMoveIndex = 0;
+                _isAutoMode = true;
+
+                UpdateButtonStates();
+
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+
+                await DisplayMoves();
+
+                watch.Stop();
+
+                _isAutoMode = false;
+                UpdateButtonStates();
+
+                double elapsedMs = watch.Elapsed.TotalMilliseconds;
+                visualizationTimes.Add(elapsedMs);
+
+                await Task.Delay(500);
+            }
+
+            return visualizationTimes;
+        }
+
+        // Метод измерения количества шагов (один запуск)
+        private List<int> MeasureStepsCount(int maxDisks)
+        {
+            List<int> stepsCounts = new List<int>();
+            HanoiTowers hanoi = new HanoiTowers();
+
+            for (int n = 1; n <= maxDisks; n++)
+            {
+                hanoi.Solve(n, "A", "B", "C");
+                int steps = hanoi.GetMoveCount();
+                stepsCounts.Add(steps);
+            }
+
+            return stepsCounts;
+        }
+        
+        //Отрисовка стержней
         private void DrawHanoiRods()
         {
             if (DisplayCanvas == null) return;
@@ -337,6 +538,7 @@ namespace FractalApp
             }
         }
         
+        //Отрисовка дисков
         private void DrawDisks(int diskCount)
         {
             if (DisplayCanvas == null) return;
@@ -388,7 +590,7 @@ namespace FractalApp
                     await MoveDisk(parsedMove.Value.DiskNumber, parsedMove.Value.FromRod, parsedMove.Value.ToRod);
                     _currentMoveIndex++;
                     UpdateButtonStates();
-                    await Task.Delay(150);
+                    await Task.Delay(10);
                 }
                 else
                 {

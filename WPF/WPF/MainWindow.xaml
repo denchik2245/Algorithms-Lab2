@@ -3,6 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         Title="Визуализация фракталов и Ханойских башен" Width="1500" Height="1000">
+    
+    <Window.Resources>
+        <Style x:Key="CustomRadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Margin" Value="0,5,0,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <!-- Добавьте другие свойства по необходимости -->
+        </Style>
+    </Window.Resources>
+    
     <Grid Background="White">
         <!-- Разделение основной сетки на три строки -->
         <Grid.RowDefinitions>
@@ -15,7 +27,7 @@
         <Grid Grid.Row="1">
             <!-- Поле для отрисовки фракталов -->
             <Canvas Name="DisplayCanvas" Background="White" Width="1000" Height="500" Visibility="Visible" />
-    
+
             <!-- График для Ханойских башен -->
             <lvc:CartesianChart x:Name="MyChart" 
                                 LegendLocation="None" 
@@ -43,15 +55,45 @@
                 <!-- Левая часть панели -->
                 <StackPanel Orientation="Horizontal" Grid.Column="0" Margin="30,30,30,30" HorizontalAlignment="Left">
                     
-                    <!-- Радиокнопки "Отрисовка фракталов" и "Ханойские башни" -->
+                    <!-- Основные радиокнопки -->
                     <StackPanel Width="190" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,30,0">
-                        <RadioButton Name="FractalRadioButton" Content="Отрисовка фракталов" IsChecked="True" Checked="FractalRadioButton_Checked" FontSize="16" Margin="0,5,0,0" VerticalContentAlignment="Center"/>
-                        <RadioButton Name="HanoiRadioButton" Content="Ханойские башни" Checked="HanoiRadioButton_Checked" FontSize="16" Margin="0,5,0,0" VerticalContentAlignment="Center"/>
-                        <RadioButton Name="GraphsRadioButton" Content="Графики" Checked="GraphsRadioButton_Checked" FontSize="16" Margin="0,5,0,0" VerticalContentAlignment="Center"/>
+                        <RadioButton Style="{StaticResource CustomRadioButtonStyle}" 
+                                     Name="FractalRadioButton" 
+                                     Content="Отрисовка фракталов" 
+                                     IsChecked="True" 
+                                     Checked="FractalRadioButton_Checked" />
+                        <RadioButton Style="{StaticResource CustomRadioButtonStyle}" 
+                                     Name="HanoiRadioButton" 
+                                     Content="Ханойские башни" 
+                                     Checked="HanoiRadioButton_Checked" />
+                        <RadioButton Style="{StaticResource CustomRadioButtonStyle}" 
+                                     Name="GraphsRadioButton" 
+                                     Content="Графики" 
+                                     Checked="GraphsRadioButton_Checked" />
                     </StackPanel>
 
                     <!-- Вертикальная линия-разделитель -->
-                    <Border Width="1" Background="#D7D7D7" Margin="0,0,30,0"/>
+                    <Border x:Name="GraphDivider" Width="1" Background="#D7D7D7" Margin="0,0,30,0" Visibility="Visible"/>
+
+                    <!-- Радиокнопки для выбора типа графика -->
+                    <StackPanel x:Name="GraphTypeRadioButtons" Orientation="Vertical" Width="200" Margin="0,0,0,0" Visibility="Collapsed">
+                        <RadioButton Style="{StaticResource CustomRadioButtonStyle}" 
+                                     Name="VisualizationTimeRadioButton" 
+                                     Content="Время визуализации" 
+                                     GroupName="GraphType" 
+                                     IsChecked="True" 
+                                     Checked="GraphTypeRadioButton_Checked" />
+                        <RadioButton Style="{StaticResource CustomRadioButtonStyle}" 
+                                     Name="AlgorithmTimeRadioButton" 
+                                     Content="Время алгоритма" 
+                                     GroupName="GraphType" 
+                                     Checked="GraphTypeRadioButton_Checked" />
+                        <RadioButton Style="{StaticResource CustomRadioButtonStyle}" 
+                                     Name="StepsCountRadioButton" 
+                                     Content="Количество шагов" 
+                                     GroupName="GraphType" 
+                                     Checked="GraphTypeRadioButton_Checked" />
+                    </StackPanel>
                     
                     <!-- Выпадающий список для фракталов -->
                     <StackPanel Width="260" Orientation="Vertical" Margin="0,0,24,0" Name="FractalControls">
@@ -171,6 +213,25 @@
                         </Border>
                     </StackPanel>
 
+                    <!-- Поле для графиков -->
+                    <StackPanel VerticalAlignment="Bottom" Margin="0,0,20,0" Name="GraphControls" Orientation="Horizontal" Visibility="Collapsed">
+                        <!-- Поле для ввода "Максимальное количество колец" -->
+                        <StackPanel Orientation="Vertical" Margin="0,0,30,0">
+                            <TextBlock Text="Максимальное количество колец" Foreground="Black" FontSize="16" FontWeight="Light" TextWrapping="Wrap" />
+                            <Border Height="40" Width="250" Background="White" CornerRadius="10" Padding="0" Margin="0,10,0,0">
+                                <TextBox x:Name="MaxDisksTextBox" 
+                                         Text="10" 
+                                         FontSize="16" 
+                                         FontWeight="Light" 
+                                         Foreground="Black" 
+                                         Background="Transparent" 
+                                         BorderThickness="0" 
+                                         Margin="12,10,12,10" />
+                            </Border>
+                        </StackPanel>
+                        
+                    </StackPanel>
+
                     <!-- Кнопка "Сгенерировать" -->
                     <Button Name="ButtonCalculation" 
                             Click="GenerateFractalButton_Click" 
@@ -284,41 +345,6 @@
                         </Button.Style>
                     </Button>
 
-                    <!-- Поле для ввода максимального количества колец (слева) и количества запусков (справа) -->
-                    <StackPanel VerticalAlignment="Bottom" Margin="0,0,30,0" Name="GraphControls" Orientation="Horizontal" Visibility="Collapsed">
-    
-                        <!-- Поле для ввода "Максимальное количество колец" -->
-                        <StackPanel Orientation="Vertical" Margin="0,0,30,0">
-                            <TextBlock Text="Максимальное количество колец" Foreground="Black" FontSize="16" FontWeight="Light" TextWrapping="Wrap" />
-                            <Border Height="40" Width="250" Background="White" CornerRadius="10" Padding="0" Margin="0,10,0,0">
-                                <TextBox x:Name="MaxDisksTextBox" 
-                                         Text="10" 
-                                         FontSize="16" 
-                                         FontWeight="Light" 
-                                         Foreground="Black" 
-                                         Background="Transparent" 
-                                         BorderThickness="0" 
-                                         Margin="12,10,12,10" />
-                            </Border>
-                        </StackPanel>
-
-                        <!-- Поле для ввода "Количество запусков" -->
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="Количество запусков" Foreground="Black" FontSize="16" FontWeight="Light" TextWrapping="Wrap" />
-                            <Border Height="40" Width="200" Background="White" CornerRadius="10" Padding="0" Margin="0,10,0,0">
-                                <TextBox x:Name="RunsTextBox" 
-                                         Text="5" 
-                                         FontSize="16" 
-                                         FontWeight="Light" 
-                                         Foreground="Black" 
-                                         Background="Transparent" 
-                                         BorderThickness="0" 
-                                         Margin="12,10,12,10" />
-                            </Border>
-                        </StackPanel>
-    
-                    </StackPanel>
-
                     <!-- Кнопка "Начать расчет" -->
                     <Button Name="StartCalculationButton" 
                             Click="StartButton_Click" 
@@ -327,7 +353,7 @@
                             FontWeight="Medium" 
                             BorderThickness="0" 
                             Visibility="Collapsed"
-                            Margin="0,0,30,0">
+                            Margin="0,0,0,0">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Background" Value="#478ECC" />
@@ -362,4 +388,3 @@
         </Border>
     </Grid>
 </Window>
-
